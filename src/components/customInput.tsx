@@ -2,38 +2,56 @@ import React, { useState } from "react";
 import "./customInput.css";
 import { BsSearch, BsGithub } from "react-icons/bs";
 import axios from "axios";
-type UserType = { login: string; bio: string; blog: string; company: string; email: string; followers: number; location: string; name: string; hireable: string; } | null;
+import { fetchFollowers, fetchUserByName } from "../libs/requestAPI";
+
+export type UserType = {
+  login: string;
+  bio: string;
+  blog: string;
+  company: string;
+  email: string;
+  followers: number;
+  location: string;
+  name: string;
+  hireable: string;
+};
 
 const CustomInput = () => {
   const [userNameValue, setUserNameValue] = useState("");
-  const [userData, setUserData] = useState<UserType>(null);
+  const [userData, setUserData] = useState<UserType | null>(null);
+  const [followersData, setFollowersData] = useState<UserType[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const [notFound] = useState('not found')
+  const notFound = "not found";
+
   const onFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     setLoading(true);
     event.preventDefault();
-    try {
-      const { data } = await axios.get<UserType>(
-        `https://api.github.com/users/${userNameValue}`
-      );
-      console.log(data);
+    const onSuccess = (data: UserType) => {
       setUserData(data);
       setUserNameValue("");
       setLoading(false);
       setError(false);
-    } catch (err) {
-      console.log(err);
+    };
+    const onError = () => {
       setUserNameValue("");
       setLoading(false);
       setError(true);
-      setUserData(null)
-    }
+      setUserData(null);
+    };
+    const onFsuccess = (data: UserType[]) => {
+      setFollowersData(data);
+      setError(false);
+    };
+
+    await fetchUserByName({ userNameValue, onError, onSuccess });
+    await fetchFollowers({ userNameValue, onFsuccess });
+    console.log(followersData);
   };
 
   return (
     <div className="CustomInput">
-      <h1 className='heading'>
+      <h1 className="heading">
         Git User Search <BsGithub />
       </h1>
       <div className="innerWrapper">
@@ -50,17 +68,23 @@ const CustomInput = () => {
           </button>
         </form>
         <div>{loading && "loading..."}</div>
-        <div className='ErrorClass'>{error && "Пользователь не найден"}</div>
+        <div className="ErrorClass">{error && "Пользователь не найден"}</div>
+        {userData && (
           <div className="outputStyles">
-        <div>Login: {(userData && userData.login) || notFound}</div>
-        <div>Bio: {(userData && userData.bio) || notFound}</div>
-        <div>Email: {(userData && userData.email) || notFound}</div>
-        <div>Blog: {(userData && userData.blog) || notFound}</div>
-        <div>Company: {(userData && userData.company) || notFound}</div>
-        <div>Location: {(userData && userData.location) || notFound}</div>
-        <div>Followers: {(userData && userData.followers) || notFound}</div>
-        <div>Name: {(userData && userData.name) || notFound}</div>
+            <div>Login: {userData.login || notFound}</div>
+            <div>Followers: {userData.followers || notFound}</div>
+            <div>Name: {userData.name || notFound}</div>
           </div>
+        )}
+        <div className="followers">
+          {followersData && (
+            <ol>
+              {followersData.map((follower) => (
+                <li>{follower.login}</li>
+              ))}
+            </ol>
+          )}
+        </div>
       </div>
     </div>
   );
