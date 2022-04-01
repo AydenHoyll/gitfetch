@@ -24,9 +24,9 @@ export const fetchUserData = async ({
     return onError();
   }
 
-  // const { data: followersData } = await axios.get<UserType[]>(
-  //   `https://api.github.com/users/${userName}/followers`
-  // );
+  const { data: followersData } = await axios.get<UserType[]>(
+    `https://api.github.com/users/${userName}/followers`
+  );
 
-  onSuccess({ userData, followers: [] });
+  onSuccess({ userData, followers: followersData });
 };

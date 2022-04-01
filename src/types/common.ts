@@ -10,20 +10,18 @@ export type UserType = {
   hireable: string;
 };
 
-export type UsersStateType<T> = {
+export type UsersStateType= {
   isLoading: boolean;
   error: string;
-  data: T;
+  data: UserType | null;
+  followers: UserType[];
 };
 
 export type GlobalContextMethodsType = {
-  setUserName: (userName: string) => void;
-  setUser: (userState: Partial<UsersStateType<UserType | null>>) => void;
+  setUser: (userState: Partial<UsersStateType>) => void;
 };
 
 export type GlobalContextType = {
-  userName: string;
-  user: UsersStateType<UserType | null>;
-  followers: UsersStateType<UserType[]>;
+  user: UsersStateType;
   methods?: GlobalContextMethodsType;
 };
